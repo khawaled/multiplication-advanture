@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مغامرة جدول الضرب</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Tahoma","Arial",sans-serif;background:linear-gradient(135deg,#eef7ff,#fff8e8);color:#17324d}
+header{padding:28px 18px;text-align:center;background:linear-gradient(135deg,#1769aa,#4aa3df);color:white}
+header h1{margin:0 0 8px;font-size:clamp(28px,5vw,46px)}
+header p{margin:0;font-size:18px}
+.container{max-width:1050px;margin:auto;padding:24px 16px}
+.card{background:white;border-radius:22px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #17324d18}
+h2{margin-top:0;color:#1769aa}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px}
+button{border:0;border-radius:14px;padding:13px 16px;font-size:17px;font-weight:bold;cursor:pointer;transition:.2s}
+button:hover{transform:translateY(-2px)}
+.table-btn{background:#e7f3ff;color:#1769aa}
+.table-btn.active{background:#1769aa;color:#fff}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.primary{background:#ffb703;color:#263238}
+.secondary{background:#dff5e9;color:#19744b}
+.danger{background:#ffe2e2;color:#a22}
+.question{text-align:center;padding:25px;background:#f8fbff;border-radius:18px}
+#questionText{font-size:42px;font-weight:900;margin:12px}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:12px;max-width:500px;margin:20px auto}
+.answer{background:#edf5ff;color:#17324d}
+.answer:disabled{cursor:not-allowed;opacity:.8}
+.feedback{min-height:32px;font-size:20px;font-weight:bold}
+.stats{display:flex;justify-content:center;gap:25px;flex-wrap:wrap;font-size:18px}
+.badge{background:#f3f6fa;padding:10px 16px;border-radius:12px}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;text-align:center;font-size:19px}
+td{padding:9px;border-bottom:1px solid #eee}
+td:first-child{font-weight:bold;color:#1769aa}
+footer{text-align:center;padding:25px;color:#61758a}
+@media(max-width:520px){.answers{grid-template-columns:1fr 1fr}#questionText{font-size:34px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🚀 مغامرة جدول الضرب</h1>
+<p>تعلّم، تدرّب، وتحدَّ نفسك!</p>
+</header>
+
+<div class="container">
+<section class="card">
+<h2>📚 اختر جدول الضرب</h2>
+<div class="tables" id="tableButtons"></div>
+<div class="actions">
+<button class="primary" onclick="showTable()">عرض الجدول</button>
+<button class="secondary" onclick="startQuiz()">ابدأ التدريب 🎯</button>
+<button class="danger" onclick="resetScore()">تصفير النتيجة</button>
+</div>
+</section>
+
+<section class="card hidden" id="tableCard">
+<h2 id="tableTitle">جدول الضرب</h2>
+<table><tbody id="tableBody"></tbody></table>
+</section>
+
+<section class="card" id="quizCard">
+<h2>🎮 التدريب</h2>
+<div class="stats">
+<span class="badge">⭐ النقاط: <b id="score">0</b></span>
+<span class="badge">✅ صحيح: <b id="correct">0</b></span>
+<span class="badge">❌ خطأ: <b id="wrong">0</b></span>
+</div>
+<div class="question">
+<div id="questionText">اختر جدولًا ثم اضغط "ابدأ التدريب"</div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback"></div>
+</div>
+</section>
+</div>
+
+<footer>موقع تعليمي تفاعلي لجدول الضرب</footer>
+
+<script>
+let selected=1, score=0, correct=0, wrong=0, a=1,b=1;
+
+const btns=document.getElementById("tableButtons");
+for(let i=1;i<=12;i++){
+ const btn=document.createElement("button");
+ btn.className="table-btn"+(i===1?" active":"");
+ btn.textContent="جدول "+i;
+ btn.onclick=()=>{selected=i;document.querySelectorAll(".table-btn").forEach(x=>x.classList.remove("active"));btn.classList.add("active");showTable()};
+ btns.appendChild(btn);
+}
+function showTable(){
+ document.getElementById("tableCard").classList.remove("hidden");
+ document.getElementById("tableTitle").textContent="جدول ضرب "+selected;
+ let body="";
+ for(let i=1;i<=12;i++) body+=`<tr><td>${selected} × ${i}</td><td>= ${selected*i}</td></tr>`;
+ document.getElementById("tableBody").innerHTML=body;
+}
+function startQuiz(){
+ document.getElementById("feedback").textContent="";
+ newQuestion();
+ document.getElementById("quizCard").scrollIntoView({behavior:"smooth"});
+}
+function newQuestion(){
+ a=selected;
+ b=Math.floor(Math.random()*12)+1;
+ document.getElementById("questionText").textContent=`${a} × ${b} = ؟`;
+ const answer=a*b, vals=new Set([answer]);
+ while(vals.size<4) vals.add(Math.max(1,answer+(Math.floor(Math.random()*11)-5)*a));
+ let arr=[...vals].sort(()=>Math.random()-.5);
+ document.getElementById("answers").innerHTML="";
+ arr.forEach(v=>{
+  const btn=document.createElement("button");
+  btn.className="answer";btn.textContent=v;
+  btn.onclick=()=>check(v,answer);
+  document.getElementById("answers").appendChild(btn);
+ });
+}
+function check(v,answer){
+ document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
+ if(v===answer){correct++;score+=10;document.getElementById("feedback").textContent="🎉 أحسنت! إجابة صحيحة";}
+ else{wrong++;score=Math.max(0,score-2);document.getElementById("feedback").textContent=`💡 حاول مرة أخرى. الإجابة الصحيحة هي ${answer}`;}
+ update();
+ setTimeout(newQuestion,900);
+}
+function update(){document.getElementById("score").textContent=score;document.getElementById("correct").textContent=correct;document.getElementById("wrong").textContent=wrong;}
+function resetScore(){score=correct=wrong=0;update();document.getElementById("feedback").textContent="تم تصفير النتيجة 👍";}
+showTable();
+</script>
+</body>
+</html>
